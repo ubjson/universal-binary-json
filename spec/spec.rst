@@ -802,7 +802,7 @@ MIME Type
 The Universal Binary JSON specification is a binary format and recommends using
 the following mime type::
 
-  application/x-ubjson
+  application/ubjson
 
 This was added directly to the specification in hopes of avoiding
 `similar confusion with JSON`_.
