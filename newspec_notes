@@ -1,0 +1,35 @@
+
+
+"alpha" spec: type+count,object+array,
+
+T,F
+Z,N
+C (0-127 byte)
+H (string)
+S (string)
+i,U
+I
+l
+L
+d
+D
+[
+{
+
+
+https://realtimelogic.com/ba/doc/en/C/reference/html/ubjson_8h_source.html	"alpha"...possibly TC swap?
+https://github.com/Steve132/ubj							"alpha" +array draft
+https://bitbucket.org/tsieprawski/ubjsc						"alpha"..TC swap?
+https://github.com/WhiZTiM/UbjsonCpp						"alpha"
+https://github.com/dinocore1/ubjson						"alpha"
+http://iso2mesh.sourceforge.net/cgi-bin/index.cgi?jsonlab			"alpha" Incorrectly seperates #$ as independent
+http://libgdx.badlogicgames.com/nightlies/docs/api/com/badlogic/gdx/utils/UBJsonReader.html "alpha" +support for "a" which is wrong
+https://sourceforge.net/p/protoc/wiki/Home/					"pre-alpha" "Draft-9"
+https://github.com/Iotic-Labs/py-ubjson						"pre-alpha" "Draft-9"
+https://github.com/dizews/php-ubjson						"pre-alpha" "Draft-9"
+https://code.google.com/archive/p/simpleubjson/source/default/source		"pre-alpha" "Draft-8/9"
+https://github.com/artcompiler/L16						"pre-alpha" "Draft-8"
+https://github.com/adilbaig/ubjsond						"pre-alpha" "Draft-8"
+https://github.com/ubjson/universal-binary-json-java				"pre-alpha" "Draft-8"
+http://ubjsonnet.codeplex.com/							"pre-alpha" "Draft-8"
+https://github.com/Sannis/node-ubjson						"pre-alpha" "Draft-8"
