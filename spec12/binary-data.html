@@ -1,0 +1,37 @@
+<em>Page not organized well and under development, but here are the highlights</em>...
+<h2>Overview</h2>
+Support for binary data in the Universal Binary JSON specification was in discussion for 2 years before it was finalized. Many, many different approaches were considered and discarded all in the name of maintaining compatibility with JSON while keeping an eye on performance.
+
+The result is a surprisingly simple and binary-efficient construct that is also easily translated to JSON and back to UBJSON again with the help of a good library, namely: a <a href="http://ubjson.org/type-reference/container-types/#optimized-format">strongly-typed</a> <em>array</em> of <a href="http://ubjson.org/type-reference/value-types/#numeric"><em>uint8</em></a> values.
+<h2>Compatibility with JSON</h2>
+Representing binary data efficiently in Universal Binary JSON while still maintaining compatibility with JSON is deceptively simple: leverage a <a href="http://ubjson.org/type-reference/container-types/#optimized-format">strongly-typed <em>array</em></a> of <a href="http://ubjson.org/type-reference/value-types/#numeric"><em>uint8</em></a> values -- essentially a list of integers.
+
+There is no explicit <em>binary</em> <a href="http://ubjson.org/type-reference/">type</a>, but instead the ability to represent binary inside of Universal Binary JSON in a very optimized and JSON-compatible construct.
+
+The <a href="http://ubjson.org/#goals">#1 goal</a> of Universal Binary JSON is compatibility with JSON. Compatibility is defined as:
+<pre>if 
+    A.ubjson -&gt; translated to -&gt; B.json
+    &amp;&amp;
+    B.json -&gt; translated to -&gt; C.ubjson
+then
+    A.ubjson == C.ubjson</pre>
+All of the Universal Binary JSON value and container types are 1:1 compatible with JSON. The only <em>semantically</em> (but not <em>structurally</em>) incompatible construct in UBJSON is strongly-typed containers in that once the container is converted to JSON the typing of the container is lost. Converting the container back to UBJSON and re-enabling the strong-typing <span style="text-decoration: underline;">does require assistance</span> from the encoding library.
+
+Since JSON has no direct support for binary data or this style of strongly-typed container, the translation to JSON converts the strongly-typed <em>array</em> to an <em>array</em> of simple JSON types - in the case of binary data, it would be an <i>array </i>of <em>number</em> values (In the example above this is the translation step from A.ubjson to B.json).
+
+Going from JSON back to UBJSON (B.json -&gt; C.ubjson) has the potential for losing the strongly-typed container information and has to be handled with care to re-enable the optimized representation of that information back in the UBJSON format.
+<h2>Library Implementation Recommendation</h2>
+The library implementors are encouraged to provide this functionality in the form of two <i>optional settings</i> that can be turned on during generation:
+<ul>
+	<li><span style="line-height: 13px;">[x] Automatically use strongly typed containers when possible</span></li>
+	<li>[x] Force use of strongly typed containers based on first element type</li>
+</ul>
+[box type="info"]Specific naming and implementation is up to the developer. This is merely a suggestion on how to handle this situation as elegantly as possible for the client.[/box]
+
+The idea being that the library can either make an automated attempt at reconstructing the strongly typed containers OR if you have a lot of knowledge of your data, you can force the library to reconstitute what looks to be a strongly typed container based on the fist element type.
+
+[box type="alert"]If <em>Force</em> is used the library should take care to detect and fail if a different type of value is found in the container during generation. More specifically, the library should remember the first element type and continue checking types as it is generating UBJSON to ensure the type continues to stay consistent.[/box]
+
+<i>Still under development...</i>
+<h2>Performance Considerations</h2>
+Something to be aware of when converting UBJSON containing a large amount of binary data is that each strongly-typed container of <em>uint8</em> values will convert to a JSON array of <em>number</em> values, because this translation also introduces a ',' character between every value in the array, this effectively <strong>doubles the size</strong> of the binary data.

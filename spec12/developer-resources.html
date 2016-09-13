@@ -1,0 +1,59 @@
+This page contains information for developers looking to develop a Universal Binary JSON library.
+<ul>
+	<li><a href="#library_req">Library Implementation Requirements</a></li>
+	<li><a href="#best_practice">Best Practices</a></li>
+	<li><a href="#example_files">Example Files</a></li>
+</ul>
+<h1><a name="library_req"></a>Library Implementation Requirements</h1>
+Libraries implementing the Universal Binary JSON spec must adhere to the following guidelines:
+<ul>
+	<li>Parsers must follow a "writer-makes-right" policy - more specifically, if a parser encounters unexpected or invalid data (e.g. negative container length value) an exception should be thrown and parsing stopped.</li>
+</ul>
+<h1><a name="best_practice"></a>Best Practices</h1>
+<ul>
+	<li><a href="#best_container_perf">Optimizing Container Performance</a></li>
+	<li><a href="#best_smallest_num">Using Smallest Number Representation</a></li>
+	<li><a href="#best_high_prec_num">Handling High-Precision Numbers on Unsupported Platforms</a></li>
+</ul>
+Through work with the community, feedback from others and our own experience with the specification, below are some of the best-practices collected into one place making it easy for folks working with the format to find answers to the more flexible portions of the spec.
+<h2><a name="best_container_perf"></a>Optimizing Container Performance</h2>
+[box type="tick"]<strong>Why:</strong> (Potentially large) data size reduction and parsing performance increase.
+<strong>How</strong>: Homogeneous data type in a container.[/box]
+
+Very large performance advantages are available when writing out <em>ARRAY</em> or <em>OBJECT</em> containers that contain same-type values. Be sure to read through the <a href="http://ubjson.org/type-reference/container-types/#optimized-format"><em>optimized container format</em></a> that can be leveraged in these cases.
+
+A typical level of optimization is being able to omit all the marker characters for all same-typed values in a container, making the sizes of all typical <a href="http://ubjson.org/type-reference/"><em>value types</em></a> 1-byte smaller.
+
+An a-typical level of optimization, that leads to the biggest reduction, is for all <a href="http://ubjson.org/type-reference/">1-byte value types</a> (e.g. <em>NO-OP</em>, <em>NULL</em>, etc); when used in conjunction with the <a href="http://ubjson.org/type-reference/container-types/#optimized-format"><em>optimized container format</em>,</a> the values themselves can be omitted from the container entirely leading to a space savings that approaches 100% as the size of the container grows.
+<h2><a name="best_smallest_num"></a>Using Smallest Number Representation</h2>
+[box type="tick"]<strong>Why:</strong> <a href="http://ubjson.org/#size">~50% size reduction</a> for numbers &gt; 5 digits and &lt; 20 digits.
+<strong>How</strong>: Always use the most compact numeric type possible when writing UBJSON.[/box]
+
+Numeric values can be represented in <a href="http://ubjson.org/type-reference/value-types/#numeric">a number of ways</a> in UBJSON; you can reduce the size of your UBJSON by inspecting the stored value and ensuring it is represented in the most-compact numeric representation possible when storing the UBJSON blob.
+
+Keep in mind that varying the type of values inside of a container may impact your ability to use the <strong>type</strong> parameter to <a href="http://ubjson.org/type-reference/container-types/#optimized-format">optimize container storage</a>.
+<h2><a name="best_high_prec_num"></a>Handling High-Precision Numbers on Unsupported Platforms</h2>
+[box type="tick"]<strong>Why:</strong> Cleanly handle &gt; 64-bit numbers on platforms that don't support them.
+<strong>How</strong>: By using the <em><a href="http://ubjson.org/type-reference/value-types/#numeric-gt-64bit">high-precision</a></em> type.[/box]
+
+Not every language supports arbitrarily long numbers and some not even numbers greater than 64-bits in size. In order to safely allow the transport and handling of &gt; 64-bit numbers across every platform, UBJSON provides the <em>high-precision</em> numeric type.
+
+The <em>high-precision</em> type is a string-based type (identical in format to the <a href="http://ubjson.org/type-reference/value-types/#string"><em>string</em></a> type) that provides a universally compatible mechanism by which arbitrarily large or precise numbers can be handled.
+
+For platforms with arbitrarily large/precise number support, they are free to parse the <em>high-precision</em> value into a native type; for platforms without support, the <em>high-precision</em> value can be safely passed on, persisted to storage or handled in other non-numeric ways while still allowing the client to handle the request and not overflow or otherwise balk at the unsupported numeric type.
+
+That said, for libraries written to support platforms that do not natively support arbitrarily large or precise values, the following guidance can be employed to provide a safe and consistent behavior when encountering them:
+<ol>
+	<li><strong>[Default] <span style="color: #0000ff;">Exception/Error</span>: </strong>Throw an exception(or return an error) when an unsupported <em>high-precision </em>value is encountered during parsing. The platform doesn't support them so allow the client a chance to be aware of the fact that it is receiving data it won't know how to parse into a native type.</li>
+	<li><strong>[Optional] <span style="color: #0000ff;">Handle as a String</span>:</strong> (<span style="text-decoration: underline;">must be user-enabled</span>) In the case where the client doesn't need to do any processing of the value and is just doing pass-through like persisting it to a data store, treat the <em>high-precision</em> value as a <em>string</em> and return it to the caller.</li>
+	<li><strong>[Optional] <span style="color: #0000ff;">Skip</span></strong>: (<span style="text-decoration: underline;">must be user-enabled</span>) Provide the ability for the parser to optionally skip unsupported values during parsing. Be aware that this is a dangerous approach and <span style="color: #ff0000;"><strong>will likely lead to data loss</strong></span> (skipped values won't be visible to the client), but in the case where a client <em>must</em> be able to parse any and all UBJSON it received even if it doesn't support arbitrarily large or precise numbers, then this has to be considered.</li>
+</ol>
+These guidelines should provide the most functional experience for a client to work with UBJSON on their platform of choice.
+<h1><a name="example_files"></a>Example Files</h1>
+[box type="alert"]Example files below only support Draft 8[/box]
+
+You can find files to test your implementation with <a href="https://github.com/thebuzzmedia/universal-binary-json-java/tree/master/src/test/resources/org/ubjson">here</a>. There are <em>formatted-json</em>, <em>compacted-json</em> and <em>UBJ</em> versions of each of the testing files contained in the repository.
+
+The simple Java classes that have matching names to the UBJ files are Java class representations of the files (for Java testing) and the <em>Marshaller</em> classes are the hand-coded serialization and deserialization code used to write out and read in those test files from UBJ format.
+
+Even if you are not working in Java, you can use those classes as a high level guide if you are curious or ignore them completely and just test against the raw file resources.

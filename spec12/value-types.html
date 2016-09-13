@@ -1,0 +1,517 @@
+The Universal Binary JSON Specification defines a total of <strong>13 value types </strong>(to <a href="http://json.org/">JSON's 5 value types</a>).
+
+The reason for the increased number of value types is because UBJSON defines <strong>8 numeric value types</strong> (to JSON's 1) allowing for highly optimized storage/retrieval of numeric values depending on the necessary precision; in addition to a number of other more optimized representations of JSON values.
+
+The specifications for each of the Universal Binary JSON Specification value types are below.
+<ol>
+	<li><a href="#null">Null Value</a></li>
+	<li><a href="#noop">No-Op Value</a></li>
+	<li><a href="#boolean">Boolean Types</a></li>
+	<li><a href="#numeric">Numeric Types</a></li>
+	<li><a href="#char">Char Type</a></li>
+	<li><a href="#string">String Type</a></li>
+	<li><a href="#binary">Binary Data</a></li>
+</ol>
+<h1><a name="null"></a>Null Value</h1>
+
+<hr />
+
+<ul>
+	<li><a href="#null-use">Usage</a></li>
+	<li><a href="#null-example">Example</a></li>
+</ul>
+The <em>null</em> value in Universal Binary JSON is defined as:
+<table id="type-ref-table" style="width: 100%;" border="0">
+<thead>
+<tr>
+<td>Type</td>
+<td>Size</td>
+<td>Marker</td>
+<td>Length</td>
+<td>Data Payload</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>null</td>
+<td> 1-byte</td>
+<td> Z</td>
+<td> No</td>
+<td> No</td>
+</tr>
+</tbody>
+</table>
+<h3><a name="null-use"></a>Usage</h3>
+The <em>null</em> value in Universal Binary JSON is equivalent to the <strong>null</strong> value from the <a href="http://json.org/">JSON specification</a>.
+<h3><a name="null-example"></a>Example</h3>
+JSON snippet:
+<pre lang="Javascript">{
+    "passcode": null
+}</pre>
+UBJSON snippet (using block-notation):
+<pre style="padding-left: 30px;">[{]
+    [i][8][passcode][Z]
+[}]</pre>
+<h1><a name="noop"></a>No-Op Value</h1>
+
+<hr />
+
+<ul>
+	<li><a href="#noop-use">Usage</a></li>
+	<li><a href="#noop-example">Example</a></li>
+</ul>
+The <em>no-op</em> value in Universal Binary JSON is defined as:
+<table id="type-ref-table" style="width: 100%;" border="0">
+<thead>
+<tr>
+<td>Type</td>
+<td>Size</td>
+<td>Marker</td>
+<td>Length</td>
+<td>Data Payload</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>noop</td>
+<td> 1-byte</td>
+<td> N</td>
+<td> No</td>
+<td> No</td>
+</tr>
+</tbody>
+</table>
+<h3><a name="noop-use"></a>Usage</h3>
+The intended usage of the <em>no-op</em> value is as a valueless signal between a producer (most likely a server) and a consumer (most likely a client) to indicate activity; for example, as a <strong>keep-alive</strong> signal so a client knows a server is still working and hasn't hung or timed out.
+
+There is no equivalent to <em>no-op</em> value in the original <a href="http://json.org/">JSON specification</a>.
+
+The <em>NO-OP</em> value is meant to be a <strong>valueless </strong>value; meaning it can be added to the <strong>elements of a container</strong> and when parsed by the receiver, the <em>no-op</em> values are simply skipped and carry know meaningful value with them.
+
+For example, the two following <em>array</em> elements are considered equal (using JSON format for readability):
+<pre>["foo", "bar", "baz"]</pre>
+and
+<pre>["foo", no-op, "bar", no-op, no-op, no-op, "baz", no-op, no-op]</pre>
+There are a number of interesting advantages to having a valueless-value defined directly in the spec.
+<h3><a name="noop-example"></a>Example</h3>
+Consider a web service that performs an expensive operation that can take quite a while (let's say 5 minutes):
+<pre style="padding-left: 30px;">&lt;start response&gt;
+[N]
+&lt;10 second delay&gt;
+[N]
+&lt;10 second delay&gt;
+[N]
+&lt;10 second delay&gt;
+&lt;...receiving data...&gt;
+&lt;10 second delay&gt;
+[N]
+&lt;10 second delay&gt;
+[N]
+&lt;...receiving remainder of data...&gt;
+&lt;end response&gt;</pre>
+Most clients by default will timeout after 60 seconds and more aggressive clients will timeout even faster. To help let clients know that the server has not hung, is still alive and is still processing the request the server can reply at some determined interval (e.g. every X seconds) with the <em>no-op</em> value and the client can parse it, acknowledge it and reset its timeout-disconnect timer as a result.
+
+Another example of leveraging <em>no-op</em> in an interesting way is modeling an efficient <strong>delete</strong> operation for UBJSON on-disk when elements of a container are removed. Instead of reading the entire container, removing the elements and writing the whole thing out again, <em>no-op</em> bytes can simply be written over the records that were removed from the containers. When the record is parsed, it is semantically identical to a container without the values.
+
+These are just a few examples of how you can leverage the <em>no-op</em> value.
+<h1><a name="boolean"></a>Boolean Types</h1>
+
+<hr />
+
+<ul>
+	<li><a href="#boolean-use">Usage</a></li>
+	<li><a href="#boolean-example">Example</a></li>
+</ul>
+The <em>boolean </em>types in Universal Binary JSON are defined as:
+<table id="type-ref-table" style="width: 100%;" border="0">
+<thead>
+<tr>
+<td>Type</td>
+<td>Size</td>
+<td>Marker</td>
+<td>Length</td>
+<td>Data Payload</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>true</td>
+<td> 1-byte</td>
+<td> T</td>
+<td> No</td>
+<td> No</td>
+</tr>
+<tr>
+<td>false</td>
+<td> 1-byte</td>
+<td> F</td>
+<td> No</td>
+<td> No</td>
+</tr>
+</tbody>
+</table>
+<h3><a name="boolean-use"></a>Usage</h3>
+A <em>boolean</em> type is represented in Universal Binary JSON similar to the <a href="http://json.org/">JSON specification</a>: using a <em>T </em>(true) and <em>F </em>(false) character marker.
+<h3><a name="boolean-example"></a>Example</h3>
+JSON snippet:
+<pre lang="Javascript">{
+    "authorized": true,
+    "verified": false
+}</pre>
+UBJSON snippet (using block-notation):
+<pre style="padding-left: 30px;">[{]
+    [i][10][authorized][T]
+    [i][8][verified][F]
+[}]</pre>
+<h1><a name="numeric"></a>Numeric Types</h1>
+
+<hr />
+
+<ul>
+	<li><a href="#numeric-use">Usage</a></li>
+	<li><a href="#numeric-example">Example</a></li>
+	<li><a href="#numeric-infinity">Infinity</a></li>
+	<li><a href="#numeric-sign-min-max">Signage &amp; Min/Max Values</a></li>
+	<li><a href="#numeric-64bit">64-bit Values</a></li>
+	<li><a href="#numeric-gt-64bit">Larger than 64-bit Values</a></li>
+	<li><a href="#numeric-byte-order-endianness">Byte Order / Endianness
+</a></li>
+	<li><a href="#numeric-storage-size">Storage Size</a></li>
+</ul>
+There are 8 numeric types in Universal Binary JSON and are defined as:
+<table id="type-ref-table" style="width: 100%;" border="0">
+<thead>
+<tr>
+<td>Type</td>
+<td>Size</td>
+<td>Marker</td>
+<td>Length</td>
+<td>Data Payload</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>int8</td>
+<td> 2-bytes</td>
+<td> i</td>
+<td> No</td>
+<td> Yes</td>
+</tr>
+<tr>
+<td>uint8</td>
+<td> 2-bytes</td>
+<td> U</td>
+<td> No</td>
+<td> Yes</td>
+</tr>
+<tr>
+<td>int16</td>
+<td> 3-bytes</td>
+<td> I</td>
+<td> No</td>
+<td> Yes</td>
+</tr>
+<tr>
+<td>int32</td>
+<td> 5-bytes</td>
+<td> l</td>
+<td> No</td>
+<td> Yes</td>
+</tr>
+<tr>
+<td>int64</td>
+<td> 9-bytes</td>
+<td> L</td>
+<td> No</td>
+<td> Yes</td>
+</tr>
+<tr>
+<td>float32</td>
+<td> 5-bytes</td>
+<td> d</td>
+<td> No</td>
+<td> Yes</td>
+</tr>
+<tr>
+<td>float64</td>
+<td> 9-bytes</td>
+<td> D</td>
+<td> No</td>
+<td> Yes</td>
+</tr>
+<tr>
+<td>high-precision number</td>
+<td> 1-byte + int num val + string byte len</td>
+<td> H</td>
+<td> Yes</td>
+<td> Yes (if non-empty)</td>
+</tr>
+</tbody>
+</table>
+In JavaScript (and JSON) the <em><a href="http://people.mozilla.org/~jorendorff/es5.html#sec-8.5">Number</a></em> type can represent any numeric value, while in most other languages multiple (discrete) numeric types exist to describe different sizes and types of numeric values; this allows the runtime to handle numeric operations more efficiently.
+
+In order for the Universal Binary JSON specification to be a performant alternative to JSON, support for these most common numeric types had to be added to allow for more efficient reading and writing of numeric values.
+
+Trying to maintain a single numeric type in UBJSON would have lead to parsing complexity, requiring each language to further inspect the numeric value and marshall it down to the most appropriate internal type. By pre-defining these different numeric types directly in UBJSON, it allows for either a direct conversion into a native language type (e.g. Java) or a straight forward marshaling into the nearest-supported language type (e.g. Erlang).
+<h3><a name="numeric-use"></a>Usage</h3>
+The intended usage of the different <em>numeric</em> types are to efficiently store numbers in a space and encoding-optimized format.
+
+[box type="info"]It is always recommended to use the smallest numeric type that fits your needs. For data with a large amount of numeric data, this can cut down the size of the payloads significantly (on average a <strong>50% reduction</strong> in size).[/box]
+<h3><a name="numeric-example"></a>Example</h3>
+JSON Snippet:
+<pre lang="Javascript">{
+    "int8": 16,
+    "uint8": 255,
+    "int16": 32767,
+    "int32": 2147483647,
+    "int64": 9223372036854775807,
+    "float32": 3.14,
+    "float64": 113243.7863123,
+    "huge1": "3.14159265358979323846",
+    "huge2": "-1.93+E190",
+    "huge3": "719..."
+}</pre>
+UBJSON snippets (using block-notation):
+<pre style="padding-left: 30px;">[i][4][int8][i][16]
+[i][5][uint8][U][255]
+[i][5][int16][I]32767]
+[i][5][int32][l][2147483647]
+[i][5][int64][L][9223372036854775807]
+[i][7][float32][d][3.14]
+[i][7][float64][D][113243.7863123]
+[i][5][huge1][H][i][22][3.14159265358979323846]
+[i][5][huge2][H][i][10][-1.93+E190]
+[i][5][huge3][H][U][200][719...]
+</pre>
+<h3><a name="numeric-infinity"></a>Infinity</h3>
+Numeric values of <strong>infinity</strong> are encoded as a <a href="#null"><em>null</em> </a>value. (See <a href="http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf">ECMA</a> and <a href="http://json.org/json.ppt">JSON</a>)
+<h3><a name="numeric-sign-min-max"></a>Signage &amp; Min/Max Values</h3>
+The min/max range of values (<em>inclusive</em>) for each numeric type are as follows:
+<table id="type-ref-table" style="width: 100%;" border="0">
+<thead>
+<tr>
+<td>Type</td>
+<td>Signed</td>
+<td>Min Value</td>
+<td>Max Value</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>int8</td>
+<td> Yes</td>
+<td> -128</td>
+<td> 127</td>
+</tr>
+<tr>
+<td>uint8</td>
+<td> No</td>
+<td> 0</td>
+<td> 255</td>
+</tr>
+<tr>
+<td>int16</td>
+<td> Yes</td>
+<td> -32,768</td>
+<td> 32,767</td>
+</tr>
+<tr>
+<td>int32</td>
+<td> Yes</td>
+<td> -2,147,483,648</td>
+<td> 2,147,483,647</td>
+</tr>
+<tr>
+<td>int64</td>
+<td> Yes</td>
+<td> -9,223,372,036,854,775,808</td>
+<td> 9,223,372,036,854,775,807</td>
+</tr>
+<tr>
+<td>float32</td>
+<td> Yes</td>
+<td> <a href="http://en.wikipedia.org/wiki/IEEE_floating_point"><em>See IEEE 754 Spec</em></a></td>
+<td> <a href="http://en.wikipedia.org/wiki/IEEE_floating_point"><em>See IEEE 754 Spec</em></a></td>
+</tr>
+<tr>
+<td>float64</td>
+<td> Yes</td>
+<td> <a href="http://en.wikipedia.org/wiki/IEEE_floating_point"><em>See IEEE 754 Spec</em></a></td>
+<td> <a href="http://en.wikipedia.org/wiki/IEEE_floating_point"><em>See IEEE 754 Spec</em></a></td>
+</tr>
+<tr>
+<td>high-precision number</td>
+<td> Yes</td>
+<td> <em>Infinite</em></td>
+<td> <em>Infinite</em></td>
+</tr>
+</tbody>
+</table>
+<h3><a name="numeric-64bit"></a>64-bit Integers</h3>
+While almost all languages native support 64-bit integers, not all do (e.g. C89 and JavaScript (<a href="http://wiki.ecmascript.org/doku.php?id=harmony:binary_data_discussion&amp;s=int64">yet</a>)) and care must be taken when encoding 64-bit integer values into binary JSON then attempting to decode it on a platform that doesn’t support it.
+
+If you are fully aware of the platforms and runtime environments your binary JSON is being used on and know they all support 64-bit integers, then you are fine.
+
+If you are trying to deserialize 64-bit integers in a client’s browser in JavaScript or another environment that does not support 64-bit integers, then you will want to take care to skip them in the input or have the client producing them encode them as <em>double</em> or <em>high-precision</em> values if that is easier to handle.
+
+Alternatively you might consider encoding your 64-bit values as doubles if you know you are going from the server to a client JavaScript environment with the binary-encoded information.
+<h3><a name="numeric-gt-64bit"></a>High-Precision Numbers (Larger than 64-bit)</h3>
+The <em>high-precision number</em> type is an ultra-portable mechanism by which arbitrarily large (or precise) numbers, greater than 64-bit in size, are encoded as a UTF-8 string and passed between systems that support them. This allows <em>high-precision number</em> values to degrade gracefully on systems that do not have a built-in type to support numeric values larger than 64-bit. Please refer to the <a href="http://ubjson.org/developer-resources/#best_practice">Best Practices</a> page for techniques on working around the lack of larger-than-64-bit numeric types on certain platforms if you need them.<em>
+</em>
+
+<em>high-precision number</em> values must be written out in accordance with the original <a href="http://json.org/">JSON <em>number</em> type specification</a>.
+<h3><a name="numeric-byte-order-endianness"></a>Byte Order / Endianness</h3>
+All integer types (<em>int8, uint8, int16, int32 </em>and<em> int64</em>) are written in <a href="http://en.wikipedia.org/wiki/Most_significant_bit">most-significant-bit order</a> (high byte written first, aka "<a href="http://en.wikipedia.org/wiki/Endianness">big endian</a>").
+
+<em>float32</em> values are written in IEEE 754 <a href="http://en.wikipedia.org/wiki/IEEE_754-1985">single precision floating point format</a>, which is the following structure:
+<ul>
+	<li>Bit 31 (1 bit) – sign</li>
+	<li>Bit 30-23 (8 bits) – exponent</li>
+	<li>Bit 22-0 (23 bits) – fraction (significand)</li>
+</ul>
+<em>float64</em> values are written in IEEE 754 <a href="http://en.wikipedia.org/wiki/Double_precision_floating-point_format#Double_precision_binary_floating-point_format">double precision floating point format</a>, which is the following structure:
+<ul>
+	<li>Bit 63 (1 bit) – sign</li>
+	<li>Bit 62-52 (11 bits) – exponent</li>
+	<li>Bit 51-0 (52 bits) – fraction (significand)</li>
+</ul>
+<h3><a name="numeric-storage-size"></a>Storage Size</h3>
+The size of the <em>high-precision number</em> type "on-disk" follows the same structure and sizing of the <a href="#string"><em>string</em></a> type (see <strong>Storage Size</strong> section).
+
+All other numeric types storage size is reflected at the beginning of this section as well as in the <a href="http://ubjson.org/type-reference/">Type Reference</a> table.
+<h1><a name="char"></a>Char Type</h1>
+
+<hr />
+
+<ul>
+	<li><a href="#string-use">Usage</a></li>
+	<li><a href="#string-example">Example</a></li>
+	<li><a href="#string-encoding">Encoding</a></li>
+	<li><a href="#string-storage-size">Storage Size</a></li>
+</ul>
+The <em>char</em> type in Universal Binary JSON is defined as:
+<table id="type-ref-table" style="width: 100%;" border="0">
+<thead>
+<tr>
+<td>Type</td>
+<td>Size</td>
+<td>Marker</td>
+<td>Length</td>
+<td>Data Payload</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>char</td>
+<td> 2-bytes</td>
+<td> C</td>
+<td> No</td>
+<td> Yes</td>
+</tr>
+</tbody>
+</table>
+<h3><a name="string-use"></a>Usage</h3>
+The <i>char </i>type in Universal Binary JSON is an unsigned byte meant to represent a single printable ASCII character (decimal values 0-127). Put another way, the <em>char</em> type represents a single-byte UTF-8 encoded character.
+
+[box type="note"]The <em>char</em> type is synonymous with 1-byte, UTF8 encoded value (decimal values 0-127). A <em>char</em> value <strong>must not</strong> have a decimal value larger than 127.[/box]
+
+The <em>char</em> type is functionally identical to the <a href="#numeric"><em>uint8</em> type</a>, but semantically is meant to represent a character and not a numeric value.
+<h3><a name="string-example"></a>Example</h3>
+JSON snippet:
+<pre lang="Javascript">{
+    "rolecode": "a",
+    "delim": ";",
+}</pre>
+UBJSON snippet (using block-notation):
+<pre style="padding-left: 30px;">[[]
+    [i][8][rolecode][C][a]
+    [i][5][delim][C][;]
+[]]</pre>
+<h1><a name="string"></a>String Type</h1>
+
+<hr />
+
+<ul>
+	<li><a href="#string-use">Usage</a></li>
+	<li><a href="#string-example">Example</a></li>
+	<li><a href="#string-encoding">Encoding</a></li>
+	<li><a href="#string-storage-size">Storage Size</a></li>
+</ul>
+The <em>string</em> type in Universal Binary JSON is defined as:
+<table id="type-ref-table" style="width: 100%;" border="0">
+<thead>
+<tr>
+<td>Type</td>
+<td>Size</td>
+<td>Marker</td>
+<td>Length</td>
+<td>Data Payload</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>string</td>
+<td> 1-byte + int num val + string byte len</td>
+<td> S</td>
+<td> Yes</td>
+<td> Yes (if non-empty)</td>
+</tr>
+</tbody>
+</table>
+<h3><a name="string-use"></a>Usage</h3>
+The <i>string </i>type in Universal Binary JSON is equivalent to the <b>string </b>type from the <a href="http://json.org/">JSON specification</a>.
+<h3><a name="string-example"></a>Example</h3>
+JSON snippet:
+<pre lang="Javascript">{
+    "username": "rkalla",
+    "imagedata": "&lt;huge string payload...&gt;"
+}</pre>
+UBJSON snippet (using block-notation):
+<pre style="padding-left: 30px;">[[]
+    [i][8][username][S][i][5][rkalla]
+    [i][9][imagedata][S][l][2097152][...huge string payload...]
+[]]</pre>
+<h3><a name="string-encoding"></a>Encoding (UTF-8)</h3>
+The JSON specification does not dictate a specific required encoding, it does however use <a href="http://en.wikipedia.org/wiki/UTF-8">UTF-8</a> as the default encoding.
+
+The Universal Binary JSON specification dictates UTF-8 as the <strong>required string encoding</strong> (this includes the <em>high-precision number</em> type as it is a string-encoded value). This will allow you to easily exchange binary JSON between open systems that all support and follow this encoding requirement as well as providing a number of <a href="http://en.wikipedia.org/wiki/UTF-8#Advantages">advantages and optimizations</a>.
+<h3><a name="string-storage-size"></a>Storage Size</h3>
+The size of the <em>string</em> type varies depending on two things:
+<ol>
+	<li>The integral numeric type used to describe the length of the string (e.g. <em>int8, in16, int32</em> or<em> int64</em>)</li>
+	<li>The UTF-8 encoded size, in bytes, of the string.</li>
+</ol>
+For example, English typically uses 1-byte per character, so the string “hello” has a length of 5. The same string in Russian is “привет” with a byte length of 12 and in Arabic the text becomes “مرحبا” with a byte length of 10.
+
+Here are some examples of what different <em>string</em> values look like to illustrate the point:
+<table id="type-ref-table" style="width: 100%;" border="0">
+<thead>
+<tr>
+<td>Binary Representation</td>
+<td>Description</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>[S][i][5][hello]</td>
+<td> 8 bytes, string UTF-8 "hello" (English)</td>
+</tr>
+<tr>
+<td>[S][i][12][привет]</td>
+<td> 15 bytes, string UTF-8 "hello" (Russian)</td>
+</tr>
+<tr>
+<td>[S][i][10][مرحبا]</td>
+<td> 13 bytes, string UTF-8 "hello" (Arabic)</td>
+</tr>
+<tr>
+<td>[S][I][1024][...1k long string...]</td>
+<td> 1 + 3 + 1024 bytes = 1028 bytes total</td>
+</tr>
+</tbody>
+</table>
+<h1><a name="binary"></a>Binary Data</h1>
+
+<hr />
+
+<em>Please see the <a href="http://ubjson.org/type-reference/binary-data/">Binary Data</a> page...</em>

@@ -1,0 +1,185 @@
+<ol>
+	<li><a href="#quickstart">Quick Start</a></li>
+	<li><a href="#license">License</a></li>
+	<li><a href="#why">Why</a></li>
+	<li><a href="#goals">Goals</a></li>
+	<li><a href="#data_format">Data Format</a></li>
+	<li><a href="#size">Size Requirements</a></li>
+	<li><a href="#endian">Endianness</a></li>
+	<li><a href="#mime-type">MIME Type</a></li>
+	<li><a href="#file-ext">File Extension</a></li>
+	<li><a href="#rfe">Requests for Enhancement (RFE)</a></li>
+</ol>
+<h1><a name="quickstart"></a>Quick Start</h1>
+
+<hr />
+
+You know what JSON is and you understand data formats and just want the good bits?
+<ul>
+	<li><span style="line-height: 13px;">Keep the <a href="http://ubjson.org/type-reference/">Type Reference</a> open in a tab to show you the markers and type definitions all in one page.</span></li>
+	<li>Details on the <a href="http://ubjson.org/type-reference/value-types/">Value Types</a> (13 of them)</li>
+	<li>Details on the <a href="http://ubjson.org/type-reference/container-types/">Container Types</a> (2 of them)
+<ul>
+	<li>Don't forget containers have an optional <a href="http://ubjson.org/type-reference/container-types/#optimized-format"><em>optimized format</em></a> you can leverage.</li>
+</ul>
+</li>
+	<li>Grab a <a href="http://ubjson.org/libraries/">UBJSON library</a> for your favorite language or platform (or write your own!)</li>
+	<li>Discuss questions about the Spec or Libraries in the <a href="https://groups.google.com/forum/?fromgroups#!forum/universal-binary-json">Google Group</a>.</li>
+	<li>File bugs or issues in <a href="https://github.com/thebuzzmedia/universal-binary-json/issues">GitHub</a>!</li>
+</ul>
+<h1><a name="license"></a>License</h1>
+
+<hr />
+
+The Universal Binary JSON Specification is licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0 License</a>.
+
+Use of the spec, either as-defined or a customized extension of it, is intended to be commercial-friendly.
+
+The ultimate purpose of this specification is to provide a useful tool for software developers to leverage in any way they see fit.
+<h1><a name="why"></a>Why</h1>
+
+<hr />
+
+<a href="http://json.org/">JSON</a> has become a ubiquitous text-based file format for data interchange. Its simplicity, ease of processing and (relatively) rich data typing made it a natural choice for many developers needing to store or shuffle data between systems quickly and easy.
+
+Unfortunately, marshalling native programming language constructs in and out of a text-based representations does have a measurable processing cost associated with it.
+
+In high-performance applications, avoiding the text-processing step of JSON can net big wins in both processing time and size reduction of stored information, which is where a binary JSON format becomes helpful.
+
+Attempts to make using JSON faster through binary specifications like <a href="http://bsonspec.org/">BSON</a>, <a href="http://bjson.org/">BJSON</a> or <a href="http://wiki.fasterxml.com/SmileFormatSpec">Smile</a> exist, but have been <a href="https://issues.apache.org/jira/browse/COUCHDB-702">rejected</a> from <a href="http://bsonspec.org/#/implementation">mass-adoption</a> for two reasons:
+<ol>
+	<li><strong>Custom (Binary-Only) Data Types</strong>: Inclusion of custom data types that have no ancillary in the original JSON spec, leaving room for incompatibilities to exist as different implementations of the spec handle the binary-only data types differently.</li>
+	<li><strong>Complexity</strong>: Some specifications provide higher performance or smaller representations at the cost of a <a href="http://wiki.fasterxml.com/SmileFormatSpec">much more complex specification</a>, making implementations more difficult which can slow or block adoption. One of the key reasons JSON became as popular as it did was because of its ease of use.</li>
+</ol>
+BSON, for example, defines types for binary data, regular expressions, JavaScript code blocks and other constructs that have no equivalent data type in JSON. BJSON defines a <em>binary</em> data type as well, again leaving the door wide open to interpretation that can potentially lead to incompatibilities between two implementations of the spec and Smile, while the closest, defines more complex data constructs and generation/parsing rules in the name of absolute space efficiency. These are not short-comings, just trade-offs the different specs made in order to service specific use-cases.
+
+The existing binary JSON specifications all define incompatibilities or complexities that undo the singular tenant that made JSON so successful: <strong>simplicity</strong>.
+
+JSON's simplicity made it accessible to anyone, made implementations in every language available and made explaining it to anyone consuming your data immediate.
+
+Any successful binary JSON specification must carry these properties forward for it to be genuinely helpful to the community at large.
+
+This specification is defined around a singular marker-based construct used to build up and represent JSON values and objects. Reading and writing the format is trivial, designed with the goal of being understood in under 10 minutes (likely less if you are very comfortable with JSON already).
+
+[box type="info"]<strong>TIP</strong>: UBJSON is built exclusively out of marker-characters like 'C' (for CHAR), 'S' (for STRING), etc. followed by either the payload itself, or a length and then the payload... that's it![/box]
+
+Fortunately, while the Universal Binary JSON specification carries these tenants of simplicity forward, it is also able to take advantage of optimized binary data structures that are (on average) 30% smaller than compacted JSON and specified for ultimate read performance; bringing <strong>simplicity, size</strong> and <strong>performance</strong> all together into a single specification that is 100% compatible with JSON.
+<h2>Why not JSON+gzip?</h2>
+On the surface simply gzipping your compacted JSON may seem like a valid (and smaller) alternative to using the Universal Binary JSON specification, but there are two significant costs associated with this approach that you should be aware of:
+<ol>
+	<li>At least a <a href="http://www.cowtowncoder.com/blog/archives/2009/05/entry_263.html">50% performance overhead</a> for processing the data.</li>
+	<li>Lack of data clarity and inability to inspect it directly.</li>
+</ol>
+While gzipping your JSON will give you great compression, about 75% on average, the overhead required to read/write the data becomes significantly higher.
+
+Additionally, because the binary data is now in a compressed format you can no longer open it directly in an editor and scan the human-readable portions of it easily; which can be important during debugging, testing or data verification and recovery.
+
+Utilizing the Universal Binary JSON format will typically provide <a href="http://ubjson.org/#size">a 30% reduction in size</a> <em>and</em> store your data in an optimized format offering you much higher performance while still allowing you to open the file directly and read through it.
+
+If you had a usage scenario where your data is put into long-term cold storage and pulled out in large chunks for processing, you might even consider gzipping your Universal Binary JSON files, storing those, and when they are pulled out and unzipped, you can then process them with all the speed advantages of UBJSON.
+
+As always, deciding which approach is right for your project depends heavily on what you need.
+<h1><a name="goals"></a>Goals</h1>
+
+<hr />
+
+The Universal Binary JSON specification has 3 goals:
+
+<strong>1. Universal Compatibility</strong>
+<p style="padding-left: 30px;">Meaning absolute compatibility with the JSON spec itself as well as only utilizing data types that are natively supported in all popular programming languages.</p>
+<p style="padding-left: 30px;">This allows 1:1 transforms between standard JSON and Universal Binary JSON as well as efficient representation in all popular programming languages without requiring parser developers to account for strange data types that their language may not support.</p>
+<strong>2. Ease of Use</strong>
+<p style="padding-left: 30px;">The Universal Binary JSON specification is intentionally defined using a single core data structure to build up the entire specification.</p>
+<p style="padding-left: 30px;">This accomplishes two things: it allows the spec to be understood quickly and allows developers to write trivially simple code to take advantage of it or interchange data with another system utilizing it.</p>
+<strong>3. Speed / Efficiency</strong>
+<p style="padding-left: 30px;">Typically the motivation for using a binary specification over a text-based one is speed and/or efficiency, so strict attention was paid to selecting data constructs and representations that are (roughly) 30% smaller than their compacted JSON counterparts and optimized for fast parsing.</p>
+
+<h1><a name="data_format"></a>Data Format</h1>
+
+<hr />
+
+The Universal Binary JSON specification utilizes a single construct with two optional segments (<em>length</em> and <em>data) </em>for all types:
+<pre style="padding-left: 30px;">[box type="info" border="full" icon="none"][<strong>type</strong>, 1-byte char]([integer numeric <strong>length</strong>])([<strong>data</strong>])[/box]</pre>
+Each element in the tuple is defined as:
+<ul>
+	<li><strong>type</strong>
+<ul>
+	<li>A 1-byte ASCII char used to indicate the <a href="http://ubjson.org/type-reference/">type</a> of the data following it.</li>
+</ul>
+</li>
+	<li><strong>length</strong> (<em>OPTIONAL</em>)
+<ul>
+	<li>A positive, integer <a href="http://ubjson.org/type-reference/value-types/#numeric">numeric type</a> (int8, uint8, int16, int32, int64) specifying the length of the following data payload.</li>
+</ul>
+</li>
+	<li><strong>data</strong> (<em>OPTIONAL</em>)
+<ul>
+	<li>A run of bytes representing the actual binary data for this type of value.</li>
+</ul>
+</li>
+</ul>
+Some value are simple enough that just writing the 1-byte ASCII marker into the stream is enough to represent the value (e.g. <em>null</em>) while others have a <em>type</em> that is specific enough that no <em>length</em> is needed as the length is implied by the type (e.g. <em>int32</em>) while others still require both a <em>type</em> and a <em>length</em> to communicate their value (e.g. <em>string</em>).
+<h2>Types</h2>
+Universal Binary JSON defines a number of <a href="http://ubjson.org/type-reference/value-types/"><em>Value Types</em></a> and <a href="http://ubjson.org/type-reference/container-types/"><em>Container Types</em></a> that map directly to <a href="http://json.org/">JSON's types</a>. For the most part the correlation is 1:1 except in the case of <a href="http://ubjson.org/type-reference/value-types/#numeric"><em>numeric </em>types</a> where UBJSON defines many more specific types of number storage and representation than JSON's single <em>number</em> type.
+<ul>
+	<li><a href="http://ubjson.org/type-reference/">Type Reference</a> (Overview)
+<ul>
+	<li><a href="http://ubjson.org/type-reference/value-types/">Value Types</a></li>
+	<li><a href="http://ubjson.org/type-reference/container-types/">Container Types</a></li>
+</ul>
+</li>
+</ul>
+<h1><a name="size"></a>Size Requirements</h1>
+
+<hr />
+
+The Universal Binary JSON specification tries to strike the perfect balance between space savings, simplicity and performance.
+
+Data stored using the Universal Binary JSON format are on average <strong>30% smaller</strong> as a rule of thumb. As you can see from some of the examples in this document though, it is not uncommon to see the binary representation of some data lead to <a href="http://ubjson.org/type-reference/container-types/#array-example">a 50% or 60% size reduction</a> without compression.
+
+The size reduction of your data depends heavily on the type of data you are storing. It is best to do your own benchmarking with a comprehensive sampling of your own data.
+
+[box type="note"]The Universal Binary JSON specification does not use compression algorithms to achieve smaller storage sizes. The size reduction is a side effect of the efficient binary storage format.[/box]
+<h3>Size Reduction Tips</h3>
+The amount of storage size reduction you'll experience with the Universal Binary JSON format will depend heavily on the type of data you are encoding.
+
+Some data shrinks considerably, some mildly and some not at all, but in every case your data will be stored in a much more efficient format that is faster to read and write.
+
+Below are pointers to give you an idea of how certain data may shrink in this format:
+<ul>
+	<li><em>null</em><strong>, </strong><em>true</em> and <em>false</em> values will be <strong>75% smaller</strong> (80% in the case of <em>false</em>)</li>
+	<li>Large <em>numeric</em> values (&gt; 5 digits &lt; 20 digits) will be <strong>50% smaller</strong>.</li>
+	<li><i>array</i> and <i>object </i>containers will be <strong>1-byte-per-value smaller</strong>.</li>
+	<li>Leveraging the <a href="http://ubjson.org/type-reference/container-types/#optimized-format"><em>optimized container format</em></a> can lead to a <strong>significant</strong> size reduction in environments where container data is of the same type.</li>
+	<li><i>string </i>values are 2-10 bytes bigger <em>per string</em> (depending on the length of the string being represented by the smaller integer numeric type).</li>
+</ul>
+One of the great things about the Universal Binary JSON format is that even though most all your data will be represented in a smaller footprint, you still get two big wins:
+<ol>
+	<li>A smaller data format means faster writes and smaller reads. It also means less data to process when parsing.</li>
+	<li>Binary format means no encoding/decoding primitive values to text and no parsing primitive values from text.</li>
+</ol>
+<h1><a name="endian"></a>Endianness</h1>
+
+<hr />
+
+The Universal Binary JSON specification requires that all numeric values be written in <a href="http://en.wikipedia.org/wiki/Endianness">Big-Endian</a> order.
+<h1><a name="mime-type"></a>MIME Type</h1>
+
+<hr />
+
+The Universal Binary JSON specification is a binary format and recommends using the following mime type:
+[box type="info" border="full" icon="none"]application/ubjson[/box]
+
+This was added directly to the specification in hopes of avoiding <a href="http://stackoverflow.com/questions/477816/the-right-json-content-type">similar confusion with JSON</a>.
+<h1><a name="file-ext"></a>File Extension</h1>
+
+<hr />
+
+"<strong>ubj</strong>" is the <a href="http://www.fileinfo.com/extension/ubj">recommended file extension</a> when writing out files using the Universal Binary JSON format (e.g. "<em>user.ubj</em>").
+
+The extension stands for "<em>Universal Binary JSON</em>" and has no known conflicting mappings to other file formats.
+<h1><a name="rfe"></a>Requests for Enhancement (RFE)</h1>
+
+<hr />
+
+All (proposed) changes to the specification are being tracked in <a href="https://github.com/thebuzzmedia/universal-binary-json/issues">GitHub</a>.
