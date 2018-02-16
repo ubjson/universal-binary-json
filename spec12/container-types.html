@@ -119,7 +119,7 @@ UBJSON snippet (82 bytes, <strong>9% smaller</strong>):
 <ul>
 	<li><a href="#optimized-format-example-array">Array Example</a></li>
 	<li><a href="#optimized-format-example-object">Object Example</a></li>
-	<li><a href="#optimized-special-cases">Special Cases</a> (Null, No-Op and Boolean)</li>
+	<li><a href="#optimized-special-cases">Special Cases</a> (Null and Boolean)</li>
 	<li><a href="#optimized-size-perf-benefits">Size &amp; Performance Benefits</a></li>
 	<li><a href="#optimized-binary-support">Binary Data Support</a></li>
 </ul>
@@ -183,6 +183,7 @@ Some rules that generators and parsers need to be aware of when dealing with the
 	<li>[type] If a <strong>type</strong> is specified, it must be done so before <strong>count</strong>.</li>
 	<li>[type] If a <strong>type</strong> is specified, a <strong>count</strong> <span style="text-decoration: underline; color: #339966;">must</span> also be specified. A <strong>type</strong> cannot be specified by itself.</li>
 	<li>[type] A container that specifies a <strong>type</strong> <span style="text-decoration: underline; color: #ff0000;">must not</span> contain any additional type markers for any contained value.</li>
+	<li>[type] The <strong>type</strong> <span style="text-decoration: underline; color: #ff0000;">cannot</span> be No-op. Indeed, creating a container whose type is “nothing” (which is what No-op actually is) does not really mean anything.</li>
 </ul>
 <a name="optimized-format-example-array"></a>
 <h2>Array Example</h2>
@@ -237,21 +238,21 @@ Below are examples of incrementally more optimized representations of an <em>obj
     [i][3][alt][67.0] 
 // No end marker since a count was specified.</pre>
 <a name="optimized-special-cases"></a>
-<h2>Special Cases (Null, No-Op and Boolean)</h2>
-Up until now all the examples of leveraging <strong>type</strong> and <strong>count</strong> have illustrated the benefit of optimizing out the markers from <a href="http://ubjson.org/type-reference/value-types/">value types</a> that have a data payload (e.g. numeric values, strings, etc.); since the type of all the values are known, the markers are easily omitted. There are, however, a few special value types that have <strong>no data payload</strong> and the markers themselves represent the value, specifically: <a href="http://ubjson.org/type-reference/value-types/#null"><em>null</em></a>, <a href="http://ubjson.org/type-reference/value-types/#noop"><em>no-op</em></a> and <a href="http://ubjson.org/type-reference/value-types/#boolean">boolean</a>.
+<h2>Special Cases (Null and Boolean)</h2>
+Up until now all the examples of leveraging <strong>type</strong> and <strong>count</strong> have illustrated the benefit of optimizing out the markers from <a href="http://ubjson.org/type-reference/value-types/">value types</a> that have a data payload (e.g. numeric values, strings, etc.); since the type of all the values are known, the markers are easily omitted. There are, however, a few special value types that have <strong>no data payload</strong> and the markers themselves represent the value, specifically: <a href="http://ubjson.org/type-reference/value-types/#null"><em>null</em></a> and <a href="http://ubjson.org/type-reference/value-types/#boolean">boolean</a> (no-op is not a valid type for a container).
 
 This section will take a look at how those types behave when used with strongly-typed containers.
 
 At a high level, placing these values in a strongly-typed container provides the basic behavior of essentially pre-defining the value for every element in the container. In the case of and <em>array</em>, all the values contained in it. In the case of an <em>object</em>, all the <em>values</em> associated with all the <em>names</em> in the <em>name-value</em> pairs.
 <h3>Array</h3>
-<pre>[[][$][N][#][I][512] // 512 'no-op' values.</pre>
-The example above is a strongly typed <em>array</em> of <strong>type</strong> <em>no-op</em> and with a <strong>count</strong> of 512.
+<pre>[[][$][F][#][I][512] // 512 'false' values.</pre>
+The example above is a strongly typed <em>array</em> of <strong>type</strong> <em>false</em> and with a <strong>count</strong> of 512.
 
-This simple declaration is equivalent to a <strong>514-byte</strong> <em>array</em> containing 512 [N] markers; instead this single line is <strong>6-bytes</strong> providing a <span style="color: #339966;"><strong>99% size reduction</strong></span>.
+This simple declaration is equivalent to a <strong>514-byte</strong> <em>array</em> containing 512 [F] markers; instead this single line is <strong>6-bytes</strong> providing a <span style="color: #339966;"><strong>99% size reduction</strong></span>.
 
 Admittedly this is a selective example of leveraging this feature, but the point is that there are potentially very large performance and size optimizations available if your data can take advantage of this shorthand.
 
-[box type="info"]Strongly-typed arrays of <a href="http://ubjson.org/type-reference/value-types/#null"><em>null</em></a>, <a href="http://ubjson.org/type-reference/value-types/#noop"><em>no-op</em></a> and <a href="http://ubjson.org/type-reference/value-types/#boolean">boolean</a> <strong>must</strong> have an empty body. The header itself defines the container's contents.[/box]
+[box type="info"]Strongly-typed arrays of <a href="http://ubjson.org/type-reference/value-types/#null"><em>null</em></a> and <a href="http://ubjson.org/type-reference/value-types/#boolean">boolean</a> <strong>must</strong> have an empty body. The header itself defines the container's contents.[/box]
 <h3>Object</h3>
 <pre>[{][$][Z][#][i][3]
     [i][4][name] // name only, no value specified.
@@ -263,7 +264,7 @@ When used in the context of an <em>object</em>, specifying one of these special-
 
 In the case of <em>object</em>s the space-savings is typically a little less drastic than in the <em>array</em> case depending on the size of the <em>names</em>; in the case of small <em>names</em>, it could be significant, approaching a <span style="color: #339966;"><strong>50% reduction</strong></span>.
 
-[box type="info"]Strongly-typed objects of <a href="http://ubjson.org/type-reference/value-types/#null"><em>null</em></a>, <a href="http://ubjson.org/type-reference/value-types/#noop"><em>no-op</em></a> and <a href="http://ubjson.org/type-reference/value-types/#boolean">boolean</a> <strong>must not</strong> have any <em>values</em> specified in the body, just the <em>name</em> portions of the <em>name-value</em> pairs. The header itself defines the <em>value</em> for every <em>name-value</em> pair.[/box]
+[box type="info"]Strongly-typed objects of <a href="http://ubjson.org/type-reference/value-types/#null"><em>null</em></a> and <a href="http://ubjson.org/type-reference/value-types/#boolean">boolean</a> <strong>must not</strong> have any <em>values</em> specified in the body, just the <em>name</em> portions of the <em>name-value</em> pairs. The header itself defines the <em>value</em> for every <em>name-value</em> pair.[/box]
 
 <a name="optimized-size-perf-benefits"></a>
 <h2>Size &amp; Performance Benefits</h2>
