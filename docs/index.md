@@ -11,8 +11,7 @@
 9.  [File Extension](#file-extension)
 10. [Requests for Enhancement (RFE)](#rfe)
 
-Quick Start
-===========
+## Quick Start
 
 * * *
 
@@ -26,15 +25,13 @@ You know what JSON is and you understand data formats and just want the good bit
 *   Discuss questions about the Spec or Libraries in the [Google Group](https://groups.google.com/forum/?fromgroups#!forum/universal-binary-json).
 *   File bugs or issues in [GitHub](https://github.com/thebuzzmedia/universal-binary-json/issues)!
 
-License
-=======
+## License
 
 * * *
 
 The Universal Binary JSON Specification is licensed under the [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0.html). Use of the spec, either as-defined or a customized extension of it, is intended to be commercial-friendly. The ultimate purpose of this specification is to provide a useful tool for software developers to leverage in any way they see fit.
 
-Why
-===
+## Why
 
 * * *
 
@@ -48,8 +45,7 @@ BSON, for example, defines types for binary data, regular expressions, JavaScrip
 
 Fortunately, while the Universal Binary JSON specification carries these tenants of simplicity forward, it is also able to take advantage of optimized binary data structures that are (on average) 30% smaller than compacted JSON and specified for ultimate read performance; bringing **simplicity, size** and **performance** all together into a single specification that is 100% compatible with JSON.
 
-Why not JSON+gzip?
-------------------
+### Why not JSON+gzip?
 
 On the surface simply gzipping your compacted JSON may seem like a valid (and smaller) alternative to using the Universal Binary JSON specification, but there are two significant costs associated with this approach that you should be aware of:
 
@@ -58,8 +54,7 @@ On the surface simply gzipping your compacted JSON may seem like a valid (and sm
 
 While gzipping your JSON will give you great compression, about 75% on average, the overhead required to read/write the data becomes significantly higher. Additionally, because the binary data is now in a compressed format you can no longer open it directly in an editor and scan the human-readable portions of it easily; which can be important during debugging, testing or data verification and recovery. Utilizing the Universal Binary JSON format will typically provide [a 30% reduction in size](#size) _and_ store your data in an optimized format offering you much higher performance while still allowing you to open the file directly and read through it. If you had a usage scenario where your data is put into long-term cold storage and pulled out in large chunks for processing, you might even consider gzipping your Universal Binary JSON files, storing those, and when they are pulled out and unzipped, you can then process them with all the speed advantages of UBJSON. As always, deciding which approach is right for your project depends heavily on what you need.
 
-Goals
-=====
+## Goals
 
 * * *
 
@@ -79,8 +74,7 @@ This accomplishes two things: it allows the spec to be understood quickly and al
 
 Typically the motivation for using a binary specification over a text-based one is speed and/or efficiency, so strict attention was paid to selecting data constructs and representations that are (roughly) 30% smaller than their compacted JSON counterparts and optimized for fast parsing.
 
-Data Format
-===========
+## Data Format
 
 * * *
 
@@ -101,8 +95,7 @@ Each element in the tuple is defined as:
 
 Some value are simple enough that just writing the 1-byte ASCII marker into the stream is enough to represent the value (e.g. _null_) while others have a _type_ that is specific enough that no _length_ is needed as the length is implied by the type (e.g. _int32_) while others still require both a _type_ and a _length_ to communicate their value (e.g. _string_).
 
-Types
------
+### Types
 
 Universal Binary JSON defines a number of [_Value Types_](value-types) and [_Container Types_](type-referencecontainer-types/) that map directly to [JSON's types](http://json.org/). For the most part the correlation is 1:1 except in the case of [_numeric_ types](value-types#numeric-types) where UBJSON defines many more specific types of number storage and representation than JSON's single _number_ type.
 
@@ -110,8 +103,7 @@ Universal Binary JSON defines a number of [_Value Types_](value-types) and [_Con
     *   [Value Types](value-types)
     *   [Container Types](type-referencecontainer-types/)
 
-Size Requirements
-=================
+## Size Requirements
 
 * * *
 
@@ -133,15 +125,13 @@ One of the great things about the Universal Binary JSON format is that even thou
 1.  A smaller data format means faster writes and smaller reads. It also means less data to process when parsing.
 2.  Binary format means no encoding/decoding primitive values to text and no parsing primitive values from text.
 
-Endianness
-==========
+## Endianness
 
 * * *
 
 The Universal Binary JSON specification requires that all numeric values be written in [Big-Endian](http://en.wikipedia.org/wiki/Endianness) order.
 
-MIME Type
-=========
+## MIME Type
 
 * * *
 
@@ -152,16 +142,14 @@ application/ubjson
 
 This was added directly to the specification in hopes of avoiding [similar confusion with JSON](http://stackoverflow.com/questions/477816/the-right-json-content-type).
 
-File Extension
-==============
+## File Extension
 
 * * *
 
 "**ubj**" is the [recommended file extension](http://www.fileinfo.com/extension/ubj) when writing out files using the Universal Binary JSON format (e.g. "_user.ubj_"). The extension stands for "_Universal Binary JSON_" and has no known conflicting mappings to other file formats.
 
 <a name="rfe"></a>
-Requests for Enhancement (RFE)
-==============================
+## Requests for Enhancement (RFE)
 
 * * *
 
