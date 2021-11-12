@@ -53,7 +53,7 @@ Attempts to make using JSON faster through binary specifications like <a href="h
 </ol>
 BSON, for example, defines types for binary data, regular expressions, JavaScript code blocks and other constructs that have no equivalent data type in JSON. BJSON defines a <em>binary</em> data type as well, again leaving the door wide open to interpretation that can potentially lead to incompatibilities between two implementations of the spec and Smile, while the closest, defines more complex data constructs and generation/parsing rules in the name of absolute space efficiency. These are not short-comings, just trade-offs the different specs made in order to service specific use-cases.
 
-The existing binary JSON specifications all define incompatibilities or complexities that undo the singular tenant that made JSON so successful: <strong>simplicity</strong>.
+The existing binary JSON specifications all define incompatibilities or complexities that undo the singular tenet that made JSON so successful: <strong>simplicity</strong>.
 
 JSON's simplicity made it accessible to anyone, made implementations in every language available and made explaining it to anyone consuming your data immediate.
 
@@ -63,7 +63,7 @@ This specification is defined around a singular marker-based construct used to b
 
 [box type="info"]<strong>TIP</strong>: UBJSON is built exclusively out of marker-characters like 'C' (for CHAR), 'S' (for STRING), etc. followed by either the payload itself, or a length and then the payload... that's it![/box]
 
-Fortunately, while the Universal Binary JSON specification carries these tenants of simplicity forward, it is also able to take advantage of optimized binary data structures that are (on average) 30% smaller than compacted JSON and specified for ultimate read performance; bringing <strong>simplicity, size</strong> and <strong>performance</strong> all together into a single specification that is 100% compatible with JSON.
+Fortunately, while the Universal Binary JSON specification carries these tenets of simplicity forward, it is also able to take advantage of optimized binary data structures that are (on average) 30% smaller than compacted JSON and specified for ultimate read performance; bringing <strong>simplicity, size</strong> and <strong>performance</strong> all together into a single specification that is 100% compatible with JSON.
 <h2>Why not JSON+gzip?</h2>
 On the surface simply gzipping your compacted JSON may seem like a valid (and smaller) alternative to using the Universal Binary JSON specification, but there are two significant costs associated with this approach that you should be aware of:
 <ol>

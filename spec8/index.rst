@@ -54,7 +54,7 @@ data constructs and generation/parsing rules in the name of absolute space
 efficiency.
 
 The existing binary JSON specifications all define incompatibilities or
-complexities that undo the singular tenant that made JSON so successful:
+complexities that undo the singular tenet that made JSON so successful:
 **simplicity**.
 
 JSON’s simplicity made it accessible to anyone, made implementations in every
@@ -70,7 +70,7 @@ designed with the goal of being understood in under 10 minutes (likely less if
 you are very comfortable with JSON already).
 
 Fortunately, while the Universal Binary JSON specification carriers these
-tenants of simplicity forward, it is also able to take advantage of optimized
+tenets of simplicity forward, it is also able to take advantage of optimized
 binary data structures that are (on average) 30% smaller than compacted JSON and
 specified for ultimate read performance; bringing **simplicity**, **size** and
 **performance** all together into a single specification that is 100% compatible
