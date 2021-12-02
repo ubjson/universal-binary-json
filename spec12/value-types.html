@@ -86,7 +86,7 @@ The intended usage of the <em>no-op</em> value is as a valueless signal between 
 
 There is no equivalent to <em>no-op</em> value in the original <a href="http://json.org/">JSON specification</a>.
 
-The <em>NO-OP</em> value is meant to be a <strong>valueless </strong>value; meaning it can be added to the <strong>elements of a container</strong> and when parsed by the receiver, the <em>no-op</em> values are simply skipped and carry know meaningful value with them.
+The <em>NO-OP</em> value is meant to be a <strong>valueless </strong>value; meaning it can be added to the <strong>elements of a container</strong> and when parsed by the receiver, the <em>no-op</em> values are simply skipped and carry no meaningful value with them.
 
 For example, the two following <em>array</em> elements are considered equal (using JSON format for readability):
 <pre>["foo", "bar", "baz"]</pre>
@@ -274,7 +274,7 @@ JSON Snippet:
 UBJSON snippets (using block-notation):
 <pre style="padding-left: 30px;">[i][4][int8][i][16]
 [i][5][uint8][U][255]
-[i][5][int16][I]32767]
+[i][5][int16][I][32767]
 [i][5][int32][l][2147483647]
 [i][5][int64][L][9223372036854775807]
 [i][7][float32][d][3.14]
